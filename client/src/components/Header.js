@@ -7,7 +7,7 @@ const Header = () => {
         <View style={headerStyles.container}>
             <Text style={headerStyles.title}>SplitSo</Text>
         </View>
-    )
-}
+    );
+};
 
 export default Header

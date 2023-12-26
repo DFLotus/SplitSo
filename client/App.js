@@ -1,14 +1,16 @@
 import React from 'react';
-import { Text, useColorScheme, View, } from 'react-native';
+import { View } from 'react-native';
 import Header from './src/components/Header';
+import CalculationScreen from './src/components/screens/CalculationScreen';
+
+//const Tab = createBottomTabNavigator()
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <View>
       <Header/>
-      <Text>Hello, World</Text>
+      <CalculationScreen/>
     </View>
   );
 }
