@@ -1,5 +1,4 @@
 import React from 'react';
-import { View } from 'react-native';
 import CalculationScreen from './src/components/screens/CalculationScreen';
 import History from './src/components/screens/History';
 import Profile from './src/components/screens/Profile';
