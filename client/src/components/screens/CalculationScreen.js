@@ -14,15 +14,16 @@ const CalculationScreen = () => {
     const [total, setTotal] = useState(0);
     const [totalSplit, setTotalSplit] = useState(0);
 
-    const zipCodeValidation = async () => {
+    const zipCodeValidation = async (enteredZip) => {
         const isValidZip = /(^\d{5}$)|(^\d{5}-\d{4}$)/
-        if(!isValidZip.test(zip_code)){
-            return Alert.alert("Input Validation", "Please enter valid Zip Code");
+        if (!isValidZip.test(enteredZip)) {
+            Alert.alert("Input Validation", "Please enter valid Zip Code");
+            return false;
         };
         try {
             url = 'https://api.zipcodestack.com/v1/search'
             params = {
-                'codes': `${zip_code}`,
+                'codes': `${enteredZip}`,
                 'country': 'us',
             }
             const heading = {
@@ -37,25 +38,50 @@ const CalculationScreen = () => {
             if (response.ok) {
                 const res = await response.json();
                 const vaildZipQuery = res.results
-                if(vaildZipQuery  === undefined || vaildZipQuery.length == 0){
-                    return Alert.alert("No Zip Code Found", "Please enter valid Zip Code");
+                if (vaildZipQuery === undefined || vaildZipQuery.length == 0) {
+                    Alert.alert("No Zip Code Found", "Please enter valid Zip Code");
+                    return false;
                 };
-                console.log(res);
             };
         }
         catch (error) {
-            console.log(`Error: ${error}`)
+            console.log(`Error: ${error}`);
+        };
+        return true;
+    };
+
+    const validateFloatInput = (type, input) => {
+        // Regular expression to match a float number with two decimal places
+        const regex = /^\d+(\.\d{1,2})?$/;
+        if (regex.test(input)) {
+            return true;
+        }
+        else {
+            Alert.alert("Input Validation", `Please enter valid amount for ${type} with input ${input}`), [{ text: "OK" }];
+            return false;
+        };
+    };
+
+    const vaildateIntInput = (type, input) => {
+        const number = Number(split);
+        if (Number.isInteger(number) && number > 1) {
+            return true;
+        }
+        else {
+            Alert.alert("Input Validation", `Please enter valid amount of ${type} with input ${input}`), [{ text: "OK" }];
+            return false;
         };
     };
 
     const calculateTotal = async () => {
+        if (!validateFloatInput("Cost", cost)) { return };
+        if (share) { if (!validateFloatInput("Tip", tip) || (!vaildateIntInput("Individuals", split))) { return } };
         try {
 
             if (!(cost) || !(zip_code) || (share && !(tip) || !(split))) {
                 Alert.alert("Input Validation", "Please enter valid amount for field(s)");
                 return;
             };
-
             const heading = {
                 method: 'GET',
                 headers: {
@@ -63,7 +89,6 @@ const CalculationScreen = () => {
                     'X-RapidAPI-Host': 'sales-tax-by-api-ninjas.p.rapidapi.com'
                 }
             };
-
             const response = await fetch(`https://sales-tax-by-api-ninjas.p.rapidapi.com/v1/salestax?zip_code=${zip_code}`, heading);
             if (response.ok) {
                 const res = await response.json();
@@ -73,7 +98,6 @@ const CalculationScreen = () => {
                 if (share) {
                     setTotalSplit(((parseFloat(cost) + taxAmount + tip) / split).toFixed(2));
                 };
-
                 Keyboard.dismiss();
             }
             else {
@@ -81,7 +105,7 @@ const CalculationScreen = () => {
             };
         }
         catch (error) {
-            console.log(error)
+            console.log(error);
             Alert.alert('Error Calculating Total Cost', `Failed to do calculation with error ${error}`);
         };
     };
@@ -106,7 +130,16 @@ const CalculationScreen = () => {
                     placeholder="Zip Code"
                     keyboardType="numeric"
                     value={zip_code}
-                    onChangeText={(value) => setZipCode(value)}
+                    onChangeText={(value) => {
+                        if (value.length <= 5) {
+                            if (value.length === 5 && zipCodeValidation(value)) {
+                                setZipCode(value);
+                            } else if (value.length < 5) {
+                                setZipCode(value);
+                            };
+                        };
+                    }}
+                    maxLength={5}
                 />
                 {share &&
                     <>
@@ -127,7 +160,6 @@ const CalculationScreen = () => {
                 <Text>Total Cost: {total}</Text>
                 {share && <><Text>Total Split Amount: {totalSplit}</Text></>}
                 <Button title="Calculate Total" onPress={calculateTotal} />
-                <Button title="Test Zip Code Vaild" onPress={zipCodeValidation} />
             </View>
         </View>
     );
