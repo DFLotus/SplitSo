@@ -1,6 +1,6 @@
 import { React, useState } from "react";
 import { View, Text, TextInput, Alert, Button, Keyboard } from "react-native";
-import { API_KEY } from '@env'
+import { API_KEY, ZIP_API_KEY } from '@env'
 import FontAwesome6 from "react-native-vector-icons/FontAwesome6"
 import calculationStyles from "../../styles/calculationStyles";
 import Header from "../Header";
@@ -14,12 +14,47 @@ const CalculationScreen = () => {
     const [total, setTotal] = useState(0);
     const [totalSplit, setTotalSplit] = useState(0);
 
+    const zipCodeValidation = async () => {
+        const isValidZip = /(^\d{5}$)|(^\d{5}-\d{4}$)/
+        if(!isValidZip.test(zip_code)){
+            return Alert.alert("Input Validation", "Please enter valid Zip Code");
+        };
+        try {
+            url = 'https://api.zipcodestack.com/v1/search'
+            params = {
+                'codes': `${zip_code}`,
+                'country': 'us',
+            }
+            const heading = {
+                method: 'GET',
+                headers: {
+                    'apikey': `${ZIP_API_KEY}`
+                }
+            };
+            const queryParams = new URLSearchParams(params);
+            const fullUrl = `${url}?${queryParams.toString()}`;
+            response = await fetch(fullUrl, heading);
+            if (response.ok) {
+                const res = await response.json();
+                const vaildZipQuery = res.results
+                if(vaildZipQuery  === undefined || vaildZipQuery.length == 0){
+                    return Alert.alert("No Zip Code Found", "Please enter valid Zip Code");
+                };
+                console.log(res);
+            };
+        }
+        catch (error) {
+            console.log(`Error: ${error}`)
+        };
+    };
+
     const calculateTotal = async () => {
         try {
+
             if (!(cost) || !(zip_code) || (share && !(tip) || !(split))) {
                 Alert.alert("Input Validation", "Please enter valid amount for field(s)");
                 return;
-            }
+            };
 
             const heading = {
                 method: 'GET',
@@ -92,6 +127,7 @@ const CalculationScreen = () => {
                 <Text>Total Cost: {total}</Text>
                 {share && <><Text>Total Split Amount: {totalSplit}</Text></>}
                 <Button title="Calculate Total" onPress={calculateTotal} />
+                <Button title="Test Zip Code Vaild" onPress={zipCodeValidation} />
             </View>
         </View>
     );
