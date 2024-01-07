@@ -78,10 +78,17 @@ const CalculationScreen = () => {
         if (share) { if (!validateFloatInput("Tip", tip) || (!vaildateIntInput("Individuals", split))) { return } };
         try {
 
-            if (!(cost) || !(zip_code) || (share && !(tip) || !(split))) {
+            if (!(cost) || !(zip_code)) {
                 Alert.alert("Input Validation", "Please enter valid amount for field(s)");
                 return;
             };
+            if (share) {
+                if (!(tip) || !(split)) {
+                    Alert.alert("Input Validation", "Please enter valid amount for field(s)");
+                    return;
+                };
+            };
+
             const heading = {
                 method: 'GET',
                 headers: {
